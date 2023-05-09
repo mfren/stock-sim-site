@@ -14,7 +14,7 @@ export default function Home() {
 
     // Fetch data from API
     const { data, error, isLoading } = useSWR('/api/stock/GOOG', fetcher)
-    const [predictionData, setPredictionData] = useState<number[]>([]);
+    const [predictionData, setPredictionData] = useState<Map<number, number[]>>();
 
 
     let chartData: ChartData<"line", { x: string, y: number }[], string>;
@@ -32,47 +32,54 @@ export default function Home() {
             ]
         };
 
-        if (predictionData.length > 0) {
+        if (predictionData) {
 
-            let endDate = new Date(data.values[data.values.length - 1].datetime);
-            endDate.setDate(endDate.getDate() + 1);
-
-            let endValue: number = data.values[data.values.length - 1].close;
-
-            let mappedData = predictionData.map((n: number, i: number) => {
+            predictionData.forEach((value, key) => {
+                let endDate = new Date(data.values[data.values.length - 1].datetime);
                 endDate.setDate(endDate.getDate() + 1);
-                return {
-                    x: `${endDate.getFullYear()}-${endDate.getMonth()}-${endDate.getDate()}`,
-                    y: endValue * n
-                }
+
+                let endValue: number = data.values[data.values.length - 1].close;
+
+                let mappedData = value.map((n: number, i: number) => {
+                    endDate.setDate(endDate.getDate() + 1);
+                    return {
+                        x: `${endDate.getFullYear()}-${endDate.getMonth()}-${endDate.getDate()}`,
+                        y: endValue * n
+                    }
+                })
+
+                chartData.datasets.push({
+                    label: `Predicted ${key}`,
+                    data: mappedData,
+                    borderColor: 'rgb(99, 255, 132)',
+                    backgroundColor: 'rgba(99, 255, 132, 0.5)',
+                });
             })
 
-            chartData.datasets.push({
-                label: 'Predicted',
-                data: mappedData,
-                borderColor: 'rgb(99, 255, 132)',
-                backgroundColor: 'rgba(99, 255, 132, 0.5)',
-            });
+            
         }
 
         console.log("Chart Data:");
         console.log(chartData);
     }
     
+    const runSim = async () => {
+        calculateDiffs(data.values)
+        .then((diffs: number[]) => {
+            return predictPrices(diffs, 1_000, [10, 50, 90]);
+        })
+        .then((prices: Map<number, number[]>) => {
+            setPredictionData(prices);
+        })
+        .catch((err: any) => {
+            console.error(err);
+        });
+    }
+
     useEffect(() => {
         // Simulate future prices
         if (!data?.values) return;
 
-        calculateDiffs(data.values)
-            .then((diffs: number[]) => {
-                return predictPrices(diffs);
-            })
-            .then((prices: number[]) => {
-                setPredictionData(prices);
-            })
-            .catch((err: any) => {
-                console.error(err);
-            });
     }, [data]);
 
     return (
@@ -92,6 +99,9 @@ export default function Home() {
                         </div>
                         <div>
                             <h2>Simulation Settings</h2>
+                            <button onClick={() => runSim()}>
+                                Reload
+                            </button>
                         </div>
                     </div>
                 </div>

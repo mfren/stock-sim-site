@@ -14,13 +14,7 @@ export async function calculateDiffs(data: any[]): Promise<number[]> {
     )) as number[];
 }
 
-export async function predictPrices(diffs: number[]): Promise<number[]> {
-    console.log("Prediction")
-
-    let avg = diffs.reduce((a, b) => a + b, 0) / diffs.length;
-    let std = Math.sqrt(diffs.map(x => Math.pow(x - avg, 2)).reduce((a, b) => a + b, 0) / diffs.length);
-    console.log(avg, std)
-
+export async function runSimulation(avg: number, std: number): Promise<number[]> {
     let prices = []
 
     let drift = avg - ((std^2)/2)
@@ -33,4 +27,30 @@ export async function predictPrices(diffs: number[]): Promise<number[]> {
     }
 
     return prices;
+}
+
+export async function predictPrices(diffs: number[], numSims: number = 1000, percentiles: number[] = [40, 50, 60]): Promise<Map<number, number[]>> {
+    console.log("Prediction")
+
+    let avg = diffs.reduce((a, b) => a + b, 0) / diffs.length;
+    let std = Math.sqrt(diffs.map(x => Math.pow(x - avg, 2)).reduce((a, b) => a + b, 0) / diffs.length);
+    console.log(avg, std)
+
+    let sims: Promise<number[]>[] = []
+    for (let i = 0; i < numSims; i++) {
+        sims[i] = runSimulation(avg, std)
+    }
+
+    return await Promise.all(sims)
+        .then(sims => {
+            sims.sort((a, b) => a.at(-1)! - b.at(-1)!)
+
+            let returnSims = new Map<number, number[]>()
+
+            for (let p of percentiles) {
+                returnSims.set(p, sims[Math.floor(numSims * (p / 100))])
+            }
+
+            return returnSims;
+        })
 }
