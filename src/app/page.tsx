@@ -25,7 +25,7 @@ export default function Home() {
             datasets: [
                 {
                     label: 'Historical',
-                    data: data.values.map((d: any) => ({ x: d.datetime, y: d.close })),
+                    data: data.values.map((d: any) => ({ x: new Date(d.datetime).toDateString(), y: d.close })),
                     borderColor: 'rgb(255, 99, 132)',
                     backgroundColor: 'rgba(255, 99, 132, 0.5)',
                 },   
