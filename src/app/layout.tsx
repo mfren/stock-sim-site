@@ -1,6 +1,4 @@
-import { Inter } from 'next/font/google'
-
-const inter = Inter({ subsets: ['latin'] })
+import "./global.css"
 
 export const metadata = {
     title: 'Stock Simulator',

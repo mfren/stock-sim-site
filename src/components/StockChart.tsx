@@ -33,10 +33,6 @@ export default function StockChart(props: { data: ChartData<"line", { x: string,
                 legend: {
                     position: 'top' as const,
                 },
-                title: {
-                    display: true,
-                    text: 'Chart.js Line Chart',
-                },
             },
         };
     }, []);

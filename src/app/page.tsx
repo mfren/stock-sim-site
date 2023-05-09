@@ -1,15 +1,10 @@
 "use client";
 
 import StockChart from "@/components/StockChart";
+import { calculateDiffs, predictPrices } from "@/helpers/SimulationHelper";
 import { ChartData } from "chart.js";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
-
-
-
-type DataPoint = {
-    datetime: string,
-    value: number
-}
 
 
 const fetcher = (url: URL) => fetch(url).then(r => r.json())
@@ -19,24 +14,88 @@ export default function Home() {
 
     // Fetch data from API
     const { data, error, isLoading } = useSWR('/api/stock/GOOG', fetcher)
+    const [predictionData, setPredictionData] = useState<number[]>([]);
 
-    const chartData: ChartData<"line", { x: string, y: number }[], string> = {
-        datasets: [
-            {
-                label: 'Dataset 1',
-                data: data.values.map((d: any) => ({ x: d.datetime, y: d.close })),
-                borderColor: 'rgb(255, 99, 132)',
-                backgroundColor: 'rgba(255, 99, 132, 0.5)',
-            }
-        ],
-    };
 
+    let chartData: ChartData<"line", { x: string, y: number }[], string>;
+    if (data) {
+        console.log("Data 2:");
+        console.log(data);
+        chartData = {
+            datasets: [
+                {
+                    label: 'Historical',
+                    data: data.values.map((d: any) => ({ x: d.datetime, y: d.close })),
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                },   
+            ]
+        };
+
+        if (predictionData.length > 0) {
+
+            let endDate = new Date(data.values[data.values.length - 1].datetime);
+            endDate.setDate(endDate.getDate() + 1);
+
+            let endValue: number = data.values[data.values.length - 1].close;
+
+            let mappedData = predictionData.map((n: number, i: number) => {
+                endDate.setDate(endDate.getDate() + 1);
+                return {
+                    x: `${endDate.getFullYear()}-${endDate.getMonth()}-${endDate.getDate()}`,
+                    y: endValue * n
+                }
+            })
+
+            chartData.datasets.push({
+                label: 'Predicted',
+                data: mappedData,
+                borderColor: 'rgb(99, 255, 132)',
+                backgroundColor: 'rgba(99, 255, 132, 0.5)',
+            });
+        }
+
+        console.log("Chart Data:");
+        console.log(chartData);
+    }
     
+    useEffect(() => {
+        // Simulate future prices
+        if (!data?.values) return;
+
+        calculateDiffs(data.values)
+            .then((diffs: number[]) => {
+                return predictPrices(diffs);
+            })
+            .then((prices: number[]) => {
+                setPredictionData(prices);
+            })
+            .catch((err: any) => {
+                console.error(err);
+            });
+    }, [data]);
+
     return (
-        <div>
+        <div className="container-md mx-auto p-4">
             <h1>Home</h1>
 
-            {isLoading ? <p>Loading...</p> : <StockChart data={data} />}
+            <div className="flex flex-row">
+
+                <div className="basis-9/12">
+                    {isLoading ? <p>Loading...</p> : <StockChart data={chartData!} />}
+                </div>
+
+                <div className="basis-3/12">
+                    <div className="flex flex-col">
+                        <div>
+                            <h2>Stock</h2>
+                        </div>
+                        <div>
+                            <h2>Simulation Settings</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </div>
     )
