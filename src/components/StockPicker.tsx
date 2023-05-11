@@ -4,7 +4,7 @@ import useSWR from "swr"
 
 const fetcher = (url: URL) => fetch(url).then(r => r.json())
 
-export default function StockPicker(props: { value: string, onChange: (s: string) => void }) {
+export default function StockPicker(props: { value: string | null, onChange: (s: string | null) => void }) {
 
     const { data, error, isLoading } = useSWR('/api/stock', fetcher)
     const [stocks, setStocks] = useState<string[]>()
@@ -20,6 +20,8 @@ export default function StockPicker(props: { value: string, onChange: (s: string
             disablePortal
             options={stocks ?? []}
             renderInput={(params) => <TextField {...params} label="Stock" />}
+            value={props.value}
+            onChange={(e, v) => props.onChange(v)}
         />        
     )
 }
