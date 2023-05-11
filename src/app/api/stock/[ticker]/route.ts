@@ -819,18 +819,18 @@ let testData = {
 
 export async function GET(req: Request, { params }: { params: { ticker: string } }) {
 
-    // const client = twelvedata({
-    //     key: process.env.TWELVEDATA_API_KEY,
-    // });
+    const client = twelvedata({
+        key: process.env.TWELVEDATA_API_KEY,
+    });
 
-    // const data = await client.timeSeries({
-    //     symbol: params.ticker,
-    //     interval: "1day",
-    //     outputsize: 100,
-    // });
+    const data = await client.timeSeries({
+        symbol: params.ticker,
+        interval: "1day",
+        outputsize: 100,
+    });
 
     return NextResponse.json(
-        testData,
+        data,
         {
             status: 200,
             headers: {
