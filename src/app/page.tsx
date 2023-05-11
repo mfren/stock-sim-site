@@ -3,9 +3,9 @@
 import StockChart from "@/components/StockChart";
 import StockPicker from "@/components/StockPicker";
 import { calculateDiffs, predictPrices } from "@/helpers/SimulationHelper";
-import { TextField } from "@mui/material";
+import { Alert, Button, Container, Divider, Grid, Link, Paper, Skeleton, Snackbar, TextField, Typography } from "@mui/material";
 import { ChartData } from "chart.js";
-import { SetStateAction, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 
 
@@ -13,10 +13,10 @@ const fetcher = (url: URL) => fetch(url).then(r => r.json())
 
 export default function Home() {
 
-
     // Fetch data from API
+    const [snackbarIsOpen, setSnackbarIsOpen] = useState<boolean>(false)
     const [numSims, setNumSims] = useState<number>(1_000);
-    const [stock, setStock] = useState<string>("GOOG")
+    const [stock, setStock] = useState<string | null>("GOOG")
     const [percentiles, setPercentiles] = useState<number[]>([50])
     const { data, error, isLoading } = useSWR(`/api/stock/${stock}`, fetcher)
     const [predictionData, setPredictionData] = useState<Map<number, number[]>>();
@@ -75,6 +75,12 @@ export default function Home() {
         runSim()
     }, [data]);
 
+    useEffect(() => {
+        if (!error) return;
+
+        alert(`There was an issue getting stock data`)
+    })
+
 
     let chartData = useMemo(() => {
         let chartData: ChartData<"line", { x: Date, y: number }[], string> = {
@@ -104,32 +110,68 @@ export default function Home() {
 
 
     return (
-        <div className="container-md mx-auto p-4">
-            <h1>Home</h1>
+        <Container maxWidth="md">
+            <Typography variant="h1" sx={{ fontSize: 40, textAlign: "center" }}>
+                Stock Price Simulator
+            </Typography>
+            <Typography variant="h2" sx={{ fontSize: 24, textAlign: "center" }}>
+                Developed by 
+                <Link href="https://mattfrench.dev" target="_blank" rel="noopener">
+                    Matt French
+                </Link>
+                 | 
+                <Link href="" target="_blank" rel="noopener">
+                    Read the blog post
+                </Link>
+            </Typography>
 
-            <div className="flex flex-row">
+            <Grid container spacing={5} sx={{ mt: 1 }}>
+                <Grid item xs={9}>
+                    {isLoading || error ? 
+                        <Skeleton variant="rounded" sx={{ minHeight: "100%" }} /> : 
+                        <StockChart data={chartData!} />
+                    }
+                </Grid>
 
-                <div className="basis-9/12">
-                    {isLoading ? <p>Loading...</p> : <StockChart data={chartData!} />}
-                </div>
-
-                <div className="basis-3/12">
-                    <div className="flex flex-col gap-2">
-                        <div>
-                            <h2>Stock</h2>
-                            <StockPicker value={stock} onChange={setStock} />
-                        </div>
-                        <div className="box ">
-                            <h2>Simulation Settings</h2>
-                            <input type="number" value={numSims} onChange={e => setNumSims(parseFloat(e.target.value))}/>
-                            <button onClick={() => runSim()}>
-                                Reload
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
+                <Grid item xs={3}>
+                    <Paper sx={{ p: 2 }}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                <Typography variant="h6">
+                                    Settings
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <StockPicker 
+                                    value={stock} 
+                                    onChange={setStock}
+                                />
+                            </Grid>
+                            <Divider />
+                            <Grid item xs={12}>
+                                <TextField
+                                    id="outlined-number"
+                                    label="Number of Simulations"
+                                    type="number"
+                                    value={numSims}
+                                    onChange={e => setNumSims(parseFloat(e.target.value))}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Button variant="contained" onClick={runSim}>
+                                    Run
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Paper>
+                </Grid>
+            </Grid>
+            
+            <Snackbar open={snackbarIsOpen} autoHideDuration={6000} onClose={() => setSnackbarIsOpen(false)}>
+                <Alert onClose={() => setSnackbarIsOpen(false)} severity="error" sx={{ width: '100%' }}>
+                    There was an error getting stock data: {error}
+                </Alert>
+            </Snackbar>
+        </Container>
     )
 }
