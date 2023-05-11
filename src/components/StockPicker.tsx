@@ -1,3 +1,4 @@
+import { Autocomplete, MenuItem, Select, TextField } from "@mui/material"
 import { useEffect, useState } from "react"
 import useSWR from "swr"
 
@@ -15,10 +16,10 @@ export default function StockPicker(props: { value: string, onChange: (s: string
     }, [data, error, isLoading])
 
     return (
-        <select value={props.value} onChange={e => props.onChange(e.target.value)}>
-            {stocks?.map(s => (
-                <option value={s}>{s}</option>
-            ))}
-        </select>
+        <Autocomplete 
+            disablePortal
+            options={stocks ?? []}
+            renderInput={(params) => <TextField {...params} label="Stock" />}
+        />        
     )
 }
