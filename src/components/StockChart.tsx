@@ -15,7 +15,7 @@ ChartJS.register(
     Legend
 );
 
-export default function StockChart(props: { data: ChartData<"line", { x: string, y: number }[], string> }) {
+export default function StockChart(props: { data: ChartData<"line", { x: Date, y: number }[], string> }) {
 
     const options = useMemo<any>(() => {
         return {
@@ -24,7 +24,7 @@ export default function StockChart(props: { data: ChartData<"line", { x: string,
                 x: {
                     type: 'time',
                     time: {
-                        unit: 'day'
+                        unit: 'month',
                     },
                     adaptors: {
                         date: {
