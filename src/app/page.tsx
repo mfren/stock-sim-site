@@ -1,8 +1,7 @@
 "use client";
 
-import CustomAutocomplete from "@/components/CustomAutocomplete";
-import StockChart from "@/components/StockChart";
 import StockPicker from "@/components/StockPicker";
+import StockChart from "@/components/StockChart";
 import { calculateDiffs, predictPrices } from "@/helpers/SimulationHelper";
 import { Alert, Button, Container, Divider, Grid, Link, Paper, Skeleton, Snackbar, TextField, Typography } from "@mui/material";
 import { ChartData } from "chart.js";
@@ -18,7 +17,6 @@ export default function Home() {
     const [snackbarIsOpen, setSnackbarIsOpen] = useState<boolean>(false)
     const [numSims, setNumSims] = useState<number>(1_000);
     const [stock, setStock] = useState<string | null>("GOOG");
-    const [exchange, setExchange] = useState<string | null>("NASDAQ");
     const [percentiles, setPercentiles] = useState<number[]>([50])
     const { data, error, isLoading } = useSWR(`/api/stocks/${stock}`, fetcher)
     const [predictionData, setPredictionData] = useState<Map<number, number[]>>();
@@ -137,35 +135,21 @@ export default function Home() {
                                 </Typography>
                             </Grid>
                             <Grid item xs={12}>
-                                {/* <StockPicker 
-                                    value={stock} 
-                                    onChange={setStock}
-                                /> */}
-                                <CustomAutocomplete
-                                    label="Stock"
-                                    url="/api/stocks"
+                                <StockPicker
                                     value={stock}
                                     onChange={setStock}
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <CustomAutocomplete
-                                    label="Exchange"
-                                    url="/api/exchanges"
-                                    value={exchange}
-                                    onChange={setExchange}
                                 />
                             </Grid>
                             <Divider />
                             <Grid item xs={12}>
                                 <TextField
-                                    id="outlined-number"
                                     label="Number of Simulations"
                                     type="number"
                                     value={numSims}
                                     onChange={e => setNumSims(parseFloat(e.target.value))}
                                 />
                             </Grid>
+
                             <Grid item xs={12}>
                                 <Button variant="contained" onClick={runSim}>
                                     Run

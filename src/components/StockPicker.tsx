@@ -5,10 +5,10 @@ import useSWR from "swr"
 
 const fetcher = (url: URL) => fetch(url).then(r => r.json())
 
-export default function CustomAutocomplete(props: { url: string, label: string, value: string | null, onChange: (s: string | null) => void }) {
+export default function StockPicker(props: { value: string | null, onChange: (s: string | null) => void }) {
 
-    const { data, error, isLoading } = useSWR(props.url, fetcher)
-    const [options, setOptions] = useState<string[]>()
+    const { data, error, isLoading } = useSWR("/api/stocks", fetcher)
+    const [options, setOptions] = useState<{ name: string, ticker: string }[]>()
     const [open, setOpen] = useState<boolean>(false)
 
     useEffect(() => {
@@ -23,12 +23,14 @@ export default function CustomAutocomplete(props: { url: string, label: string, 
             onOpen={() => setOpen(true)}
             onClose={() => setOpen(false)}
             options={options ?? []}
+            isOptionEqualToValue={(option, value) => option.name === value.name}
+            getOptionLabel={(option) => option.name}      
             loading={isLoading}
-            onChange={(e, v) => props.onChange(v)}
+            onChange={(e, v) => props.onChange(v?.ticker ?? null)}
             renderInput={(params) => (
                 <TextField
                     {...params}
-                    label={props.label}
+                    label="Stock"
                     InputProps={{
                         ...params.InputProps,
                         endAdornment: (
