@@ -1,5 +1,6 @@
 "use client";
 
+import CustomAutocomplete from "@/components/CustomAutocomplete";
 import StockChart from "@/components/StockChart";
 import StockPicker from "@/components/StockPicker";
 import { calculateDiffs, predictPrices } from "@/helpers/SimulationHelper";
@@ -16,9 +17,10 @@ export default function Home() {
     // Fetch data from API
     const [snackbarIsOpen, setSnackbarIsOpen] = useState<boolean>(false)
     const [numSims, setNumSims] = useState<number>(1_000);
-    const [stock, setStock] = useState<string | null>("GOOG")
+    const [stock, setStock] = useState<string | null>("GOOG");
+    const [exchange, setExchange] = useState<string | null>("NASDAQ");
     const [percentiles, setPercentiles] = useState<number[]>([50])
-    const { data, error, isLoading } = useSWR(`/api/stock/${stock}`, fetcher)
+    const { data, error, isLoading } = useSWR(`/api/stocks/${stock}`, fetcher)
     const [predictionData, setPredictionData] = useState<Map<number, number[]>>();
     const [historicalDataSet, setHistoricalDataSet] = useState<{ x: Date, y: number }[]>()
     const [predicitionDataSets, setPredicitionDataSets] = useState<{ p: number, ds: { x: Date, y: number }[]}[]>()
@@ -75,11 +77,11 @@ export default function Home() {
         runSim()
     }, [data]);
 
-    useEffect(() => {
-        if (!error) return;
+    // useEffect(() => {
+    //     if (!error) return;
 
-        alert(`There was an issue getting stock data`)
-    })
+    //     alert(`There was an issue getting stock data`)
+    // })
 
 
     let chartData = useMemo(() => {
@@ -135,9 +137,23 @@ export default function Home() {
                                 </Typography>
                             </Grid>
                             <Grid item xs={12}>
-                                <StockPicker 
+                                {/* <StockPicker 
                                     value={stock} 
                                     onChange={setStock}
+                                /> */}
+                                <CustomAutocomplete
+                                    label="Stock"
+                                    url="/api/stocks"
+                                    value={stock}
+                                    onChange={setStock}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <CustomAutocomplete
+                                    label="Exchange"
+                                    url="/api/exchanges"
+                                    value={exchange}
+                                    onChange={setExchange}
                                 />
                             </Grid>
                             <Divider />
