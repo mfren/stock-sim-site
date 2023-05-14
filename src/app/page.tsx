@@ -7,26 +7,33 @@ import { Alert, Button, Container, Divider, Grid, Link, Paper, Skeleton, Snackba
 import { ChartData } from "chart.js";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
+import SettingsPanel from "@/components/SettingsPanel";
 
 
 const fetcher = (url: URL) => fetch(url).then(r => r.json())
 
 export default function Home() {
 
-    // Fetch data from API
-    const [snackbarIsOpen, setSnackbarIsOpen] = useState<boolean>(false)
-    const [numSims, setNumSims] = useState<number>(1_000);
-    const [stock, setStock] = useState<string | null>("GOOG");
-    const [percentiles, setPercentiles] = useState<number[]>([50])
+    // Stock data
+    const [stock, setStock] = useState<string>("GOOG");
     const { data, error, isLoading } = useSWR(`/api/stocks/${stock}`, fetcher)
+
+    // Simulation settings
+    const [numSims, setNumSims] = useState<number>(1_000)
+    const [simLength, setSimLength] = useState<number>(100)
+    const [percentiles, setPercentiles] = useState<number[]>([50])
+
+    // Datasets
     const [predictionData, setPredictionData] = useState<Map<number, number[]>>();
     const [historicalDataSet, setHistoricalDataSet] = useState<{ x: Date, y: number }[]>()
     const [predicitionDataSets, setPredicitionDataSets] = useState<{ p: number, ds: { x: Date, y: number }[]}[]>()
 
+    const [snackbarIsOpen, setSnackbarIsOpen] = useState<boolean>(false)
+
     const runSim = async () => {
         calculateDiffs(data.values)
         .then((diffs: number[]) => {
-            return predictPrices(diffs, numSims, percentiles);
+            return predictPrices(diffs, numSims, simLength, percentiles);
         })
         .then((prices: Map<number, number[]>) => {
             setPredictionData(prices);
@@ -75,12 +82,6 @@ export default function Home() {
         runSim()
     }, [data]);
 
-    // useEffect(() => {
-    //     if (!error) return;
-
-    //     alert(`There was an issue getting stock data`)
-    // })
-
 
     let chartData = useMemo(() => {
         let chartData: ChartData<"line", { x: Date, y: number }[], string> = {
@@ -119,44 +120,23 @@ export default function Home() {
             </Typography>
 
             <Grid container spacing={5} sx={{ mt: 1 }}>
-                <Grid item xs={9}>
+                <Grid item xs={8}>
                     {isLoading || error ? 
                         <Skeleton variant="rounded" sx={{ minHeight: "100%" }} /> : 
                         <StockChart data={chartData!} />
                     }
                 </Grid>
 
-                <Grid item xs={3}>
-                    <Paper sx={{ p: 2 }}>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12}>
-                                <Typography variant="h6">
-                                    Settings
-                                </Typography>
-                            </Grid>
-                            <Grid item xs={12}>
-                                <StockPicker
-                                    value={stock}
-                                    onChange={setStock}
-                                />
-                            </Grid>
-                            <Divider />
-                            <Grid item xs={12}>
-                                <TextField
-                                    label="Number of Simulations"
-                                    type="number"
-                                    value={numSims}
-                                    onChange={e => setNumSims(parseFloat(e.target.value))}
-                                />
-                            </Grid>
-
-                            <Grid item xs={12}>
-                                <Button variant="contained" onClick={runSim}>
-                                    Run
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </Paper>
+                <Grid item xs={4}>
+                    <SettingsPanel 
+                        stock={stock}
+                        setStock={setStock}
+                        numSims={numSims}
+                        setNumSims={setNumSims}
+                        simLength={simLength}
+                        setSimLength={setSimLength}
+                        runOnClick={runSim}
+                    />
                 </Grid>
             </Grid>
             
