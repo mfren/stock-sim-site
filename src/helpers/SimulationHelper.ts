@@ -14,12 +14,12 @@ export async function calculateDiffs(data: any[]): Promise<number[]> {
     )) as number[];
 }
 
-export async function runSimulation(avg: number, std: number): Promise<number[]> {
+export async function runSimulation(avg: number, std: number, simLength: number): Promise<number[]> {
     let prices = []
 
     let drift = avg - ((std^2)/2)
 
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < simLength; i++) {
         let lastPrice: number = prices[prices.length - 1] || 1;
         let volatilty: number = std * gaussianRandom();
         let price: number = lastPrice * Math.pow(Math.E, drift + volatilty);
@@ -29,7 +29,7 @@ export async function runSimulation(avg: number, std: number): Promise<number[]>
     return prices;
 }
 
-export async function predictPrices(diffs: number[], numSims: number = 1000, percentiles: number[] = [40, 50, 60]): Promise<Map<number, number[]>> {
+export async function predictPrices(diffs: number[], numSims: number = 1000, simLength: number = 100, percentiles: number[] = [40, 50, 60]): Promise<Map<number, number[]>> {
     console.log("Prediction")
 
     let avg = diffs.reduce((a, b) => a + b, 0) / diffs.length;
@@ -38,7 +38,7 @@ export async function predictPrices(diffs: number[], numSims: number = 1000, per
 
     let sims: Promise<number[]>[] = []
     for (let i = 0; i < numSims; i++) {
-        sims[i] = runSimulation(avg, std)
+        sims[i] = runSimulation(avg, std, simLength)
     }
 
     return await Promise.all(sims)
