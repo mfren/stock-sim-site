@@ -9,7 +9,11 @@ type CacheItem = {
 
 export async function GET(req: Request, { params }: { params: { ticker: string } }) {
 
-    await new Promise(r => setTimeout(r, 5000));
+    // Logic for this endpoint:
+    // 1. Check cache for data
+    // 2. If cache empty or invalid, refetch data
+    // 3. Store new data in cache
+    // 4. Return data to user
 
     const cached = await kv.get<CacheItem>(params.ticker);
 
