@@ -120,14 +120,14 @@ export default function Home() {
             </Typography>
 
             <Grid container spacing={5} sx={{ mt: 1 }}>
-                <Grid item xs={8}>
+                <Grid item xs={12} md={8}>
                     {isLoading || error ? 
                         <Skeleton variant="rounded" sx={{ minHeight: "100%" }} /> : 
                         <StockChart data={chartData!} />
                     }
                 </Grid>
 
-                <Grid item xs={4}>
+                <Grid item xs={12} md={4}>
                     <SettingsPanel 
                         stock={stock}
                         setStock={setStock}
