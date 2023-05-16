@@ -116,7 +116,7 @@ export default function Home() {
                 Stock Price Simulator
             </Typography>
             <Typography variant="h2" sx={{ fontSize: 24, textAlign: "center" }}>
-                Developed by <Link href="https://mattfrench.dev" target="_blank" rel="noopener">Matt French</Link> | <Link href="" target="_blank" rel="noopener">Read the blog post</Link>
+                Developed by <Link href="https://mattfrench.dev" target="_blank" rel="noopener">Matt French</Link> | <Link href="https://medium.com/@matt.a.french/building-a-stock-simulator-website-using-nextjs-react-b0c204f47681" target="_blank" rel="noopener">Read the blog post</Link>
             </Typography>
 
             <Grid container spacing={5} sx={{ mt: 1 }}>
