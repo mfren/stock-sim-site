@@ -1,34 +1,20 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Matt French | Stock Simulator
+This is a [Next.js](https://nextjs.org/) project using React, TypeScript, and TailwindCSS.
+Read my full blog post over on [Medium](https://medium.com/@matt.a.french/building-a-stock-simulator-website-using-nextjs-react-b0c204f47681).
 
-## Getting Started
+![Preview of the website](https://miro.medium.com/v2/resize:fit:4800/format:webp/1*OQg8nyEycVNUVO5bkKdstg.png)
 
-First, run the development server:
+## The objective
+My goal for this project was to create a small visualisation tool for the statistical analysis work I did in my [stock-sim]() project.
+The idea is to fetch data from an external API, display historical data, run a simulation on the frontend, and then visualise the prediction.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+## Where it's hosted
+Currently the website runs on Vercel and deployments are managed by the built-in CI/CD pipeline.
+You can view the website at [stocks.mattfrench.dev](https://stocks.mattfrench.dev).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## The Issue
+My main issue is data. I need to pull stock information from an API (for which I chose twelvedata) both the create the simulation and to show historical data on the graph. The issue with this is rate limits, because I don’t want to spend huge amounts on API keys, but want to potentially support several users making requests at the same time, I’m had to find a way around the 8-requests-per-minute limit.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## The Solution
+Caching. The easiest way to get around the limits is to cache data on the backend in a form of database, then when a user makes a request to our API, we either fetch from the cache or go to the twelvedata API.
+At the time of writing, Vercel have just launched 4 new datastores, one of which being a Redis wrapper (known as Vercel KV) which will be perfect for our application.
